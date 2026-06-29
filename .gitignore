@@ -1,0 +1,41 @@
+# --- C/C++ 编译产物 ---
+*.o
+*.obj
+*.gch
+*.pch
+*.d
+
+# --- 静态与动态链接库 ---
+*.lib
+*.a
+*.la
+*.lo
+*.dll
+*.so
+*.dylib
+
+# --- 可执行文件 ---
+*.exe
+*.out
+*.app
+# 忽略编译出来的 main 程序
+main
+
+# --- 编译器和构建工具生成目录 ---
+build/
+out/
+bin/
+.cmake/
+CMakeCache.txt
+CMakeFiles/
+
+# --- 编译器/IDE 配置文件 ---
+.vscode/
+.idea/
+*.suo
+*.user
+*.workspace
+
+# --- 临时文件 ---
+*.log
+.DS_Store
