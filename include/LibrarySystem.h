@@ -44,11 +44,13 @@ namespace library
         std::unordered_map<std::string, std::unique_ptr<Book>> books_;
         std::unordered_map<std::string, std::unique_ptr<Reader>> readers_;
         std::vector<BorrowingRecord> records_;
-        static std::string today();
 
     public:
         LibrarySystem() = default;
         ~LibrarySystem() = default;
+
+        // 系统当天日期 "YYYY-MM-DD"，菜单和还书流程拿它当 asOf
+        static std::string today();
 
         // 系统本身也应该是唯一的，禁用复制，和实体的逻辑一致
         LibrarySystem(const LibrarySystem &) = delete;
@@ -73,6 +75,11 @@ namespace library
         }
         [[nodiscard]] std::size_t bookCount() const { return books_.size(); }
         [[nodiscard]] std::size_t readerCount() const { return readers_.size(); }
+
+        // 某读者所借某书截至 asOfDate 的逾期费用（元）
+        [[nodiscard]] double calculateFine(const std::string &readerId,
+                                           const std::string &bookId,
+                                           const std::string &asOfDate) const;
 
         // 列出所有图书/读者（多态）
         void listBooks() const;

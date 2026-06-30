@@ -6,6 +6,8 @@
 #include "../include/book/Magazine.h"
 #include "../include/reader/Student.h"
 #include "../include/reader/Teacher.h"
+#include "../include/LibrarySystem.h"
+#include "../include/LibraryException.h"
 
 #include <cmath>
 #include <iostream>
@@ -90,6 +92,92 @@ static void test_reader_terms()
     endCase();
 }
 
+namespace
+{
+    // P1 纸质书(借期30)，E1 电子书；S1 学生(借期30/0.5)，T1 教师(借期60/0.2)
+    std::unique_ptr<LibrarySystem> makeFineSystem()
+    {
+        auto sys = std::make_unique<LibrarySystem>();
+        sys->addBook(std::make_unique<PhysicalBook>("P1", "C++ Primer", "Lippman", "AW", 2));
+        sys->addBook(std::make_unique<EBook>("E1", "SICP", "Abelson", "MIT", "PDF", 12.5));
+        sys->addReader(std::make_unique<StudentReader>("S1", "Alice"));
+        sys->addReader(std::make_unique<TeacherReader>("T1", "Bob"));
+        return sys;
+    }
+}
+
+static void test_fine_student_overdue()
+{
+    beginCase("fine: 学生纸质书逾期 10 天 = 5.0 元");
+    auto sys = makeFineSystem();
+    CHECK(sys->borrowBook("S1", "P1") == BorrowStatus::Success);
+    std::string borrowDate = sys->getRecords().back().borrowDate;
+    // 借期 min(P1=30, S1=30)=30，借后 40 天即逾期 10 天
+    std::string asOf = addDays(borrowDate, 40);
+    CHECK(approx(sys->calculateFine("S1", "P1", asOf), 5.0));
+    endCase();
+}
+
+static void test_fine_teacher_uses_min_term()
+{
+    beginCase("fine: 教师借纸质书有效借期取 min(30,60)=30");
+    auto sys = makeFineSystem();
+    CHECK(sys->borrowBook("T1", "P1") == BorrowStatus::Success);
+    std::string borrowDate = sys->getRecords().back().borrowDate;
+    // 若取 60 天则未逾期；取 30 天则逾期 10 天 × 0.2 = 2.0
+    std::string asOf = addDays(borrowDate, 40);
+    CHECK(approx(sys->calculateFine("T1", "P1", asOf), 2.0));
+    endCase();
+}
+
+static void test_fine_ebook_never()
+{
+    beginCase("fine: 电子书永不逾期");
+    auto sys = makeFineSystem();
+    CHECK(sys->borrowBook("S1", "E1") == BorrowStatus::Success);
+    std::string borrowDate = sys->getRecords().back().borrowDate;
+    std::string asOf = addDays(borrowDate, 365);
+    CHECK(approx(sys->calculateFine("S1", "E1", asOf), 0.0));
+    endCase();
+}
+
+static void test_fine_not_overdue()
+{
+    beginCase("fine: 借期内不收费");
+    auto sys = makeFineSystem();
+    CHECK(sys->borrowBook("S1", "P1") == BorrowStatus::Success);
+    std::string borrowDate = sys->getRecords().back().borrowDate;
+    std::string asOf = addDays(borrowDate, 20);   // 借期 30 天内
+    CHECK(approx(sys->calculateFine("S1", "P1", asOf), 0.0));
+    endCase();
+}
+
+static void test_fine_no_record()
+{
+    beginCase("fine: 没借过这本书返回 0");
+    auto sys = makeFineSystem();
+    CHECK(approx(sys->calculateFine("S1", "P1", "2099-01-01"), 0.0));
+    endCase();
+}
+
+static void test_fine_throws()
+{
+    beginCase("fine: 找不到读者/图书抛异常");
+    auto sys = makeFineSystem();
+    bool caught = false;
+    try { (void)sys->calculateFine("nope", "P1", "2099-01-01"); }
+    catch (const ReaderNotFoundException &) { caught = true; }
+    catch (...) {}
+    CHECK(caught);
+
+    caught = false;
+    try { (void)sys->calculateFine("S1", "nope", "2099-01-01"); }
+    catch (const BookNotFoundException &) { caught = true; }
+    catch (...) {}
+    CHECK(caught);
+    endCase();
+}
+
 int main()
 {
     std::cout << "===== Fine / Date Tests =====\n";
@@ -98,6 +186,12 @@ int main()
     test_add_days();
     test_book_borrow_days();
     test_reader_terms();
+    test_fine_student_overdue();
+    test_fine_teacher_uses_min_term();
+    test_fine_ebook_never();
+    test_fine_not_overdue();
+    test_fine_no_record();
+    test_fine_throws();
 
     std::cout << "=============================\n";
     std::cout << "PASSED: " << g_passed << "   FAILED: " << g_failed << "\n";

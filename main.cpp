@@ -7,6 +7,7 @@
 #include "include/reader/Teacher.h"
 
 #include <iostream>
+#include <iomanip>
 #include <limits>
 #include <memory>
 #include <string>
@@ -185,7 +186,33 @@ namespace
         std::string bookId = readLine("图书ID: ");
         try
         {
-            reportReturn(sys.returnBook(readerId, bookId));
+            // 还书会把记录标记成已还，所以先算逾期费用再还
+            double fine = sys.calculateFine(readerId, bookId, LibrarySystem::today());
+            ReturnStatus s = sys.returnBook(readerId, bookId);
+            reportReturn(s);
+            if (s == ReturnStatus::Success && fine > 0.0)
+                std::cout << "  [!] 逾期费用: " << std::fixed << std::setprecision(2)
+                          << fine << " 元\n";
+        }
+        catch (const LibraryException &e)
+        {
+            std::cout << "  [X] " << e.what() << '\n';
+        }
+    }
+
+    void doFine(LibrarySystem &sys)
+    {
+        std::cout << "\n-- 逾期费用查询 --\n";
+        std::string readerId = readLine("读者ID: ");
+        std::string bookId = readLine("图书ID: ");
+        try
+        {
+            double fine = sys.calculateFine(readerId, bookId, LibrarySystem::today());
+            if (fine > 0.0)
+                std::cout << "  逾期费用: " << std::fixed << std::setprecision(2)
+                          << fine << " 元\n";
+            else
+                std::cout << "  未逾期，无需缴费\n";
         }
         catch (const LibraryException &e)
         {
@@ -212,6 +239,7 @@ namespace
                   << "  6) 列出所有读者\n"
                   << "  7) 查看借阅记录\n"
                   << "  8) 保存数据\n"
+                  << "  9) 逾期费用查询\n"
                   << "  0) 保存并退出\n"
                   << "====================================\n";
     }
@@ -259,6 +287,9 @@ int main()
         case 8:
             sys.save(kDataDir);
             std::cout << "  [OK] 数据已保存到 " << kDataDir << "/\n";
+            break;
+        case 9:
+            doFine(sys);
             break;
         case 0:
             sys.save(kDataDir);

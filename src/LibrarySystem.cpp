@@ -1,6 +1,8 @@
 #include "../include/LibrarySystem.h"
 #include "../include/CsvStorage.h"
+#include "../include/DateUtil.h"
 
+#include <algorithm>
 #include <chrono>
 #include <ctime>
 #include <filesystem>
@@ -130,6 +132,43 @@ namespace library
             }
         }
         return ReturnStatus::Success;
+    }
+
+    double LibrarySystem::calculateFine(const std::string &readerId,
+                                        const std::string &bookId,
+                                        const std::string &asOfDate) const
+    {
+        Reader *reader = findReader(readerId);
+        if (!reader)
+            throw ReaderNotFoundException(readerId);
+
+        Book *book = findBook(bookId);
+        if (!book)
+            throw BookNotFoundException(bookId);
+
+        // 找这本书还没还的那条记录（从最近往前找）
+        const BorrowingRecord *rec = nullptr;
+        for (auto it = records_.rbegin(); it != records_.rend(); ++it)
+        {
+            if (it->readerId == readerId && it->bookId == bookId && !it->isReturned())
+            {
+                rec = &(*it);
+                break;
+            }
+        }
+        if (!rec)
+            return 0.0;
+
+        // 电子书/杂志不计逾期
+        if (book->maxBorrowDays() < 0)
+            return 0.0;
+
+        int dueDays = std::min(book->maxBorrowDays(), reader->maxBorrowDays());
+        int overdue = daysBetween(rec->borrowDate, asOfDate) - dueDays;
+        if (overdue <= 0)
+            return 0.0;
+
+        return overdue * reader->finePerDay();
     }
 
     void LibrarySystem::listBooks() const
