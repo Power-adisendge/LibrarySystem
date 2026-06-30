@@ -1,7 +1,9 @@
 #include "../include/LibrarySystem.h"
+#include "../include/CsvStorage.h"
 
 #include <chrono>
 #include <ctime>
+#include <filesystem>
 #include <iostream>
 
 namespace library
@@ -142,6 +144,58 @@ namespace library
         std::cout << "===== Readers (" << readers_.size() << ") =====\n";
         for (const auto &[id, reader] : readers_)
             reader->display();
+    }
+
+    // ---- 持久化 ----
+    void LibrarySystem::save(const std::string &dir) const
+    {
+        std::filesystem::create_directories(dir);
+
+        std::vector<const Book *> books;
+        books.reserve(books_.size());
+        for (const auto &[id, book] : books_)
+            books.push_back(book.get());
+
+        std::vector<const Reader *> readers;
+        readers.reserve(readers_.size());
+        for (const auto &[id, reader] : readers_)
+            readers.push_back(reader.get());
+
+        CsvStorage::saveBooks(dir + "/books.csv", books);
+        CsvStorage::saveReaders(dir + "/readers.csv", readers);
+        CsvStorage::saveRecords(dir + "/records.csv", records_);
+    }
+
+    void LibrarySystem::load(const std::string &dir)
+    {
+        books_.clear();
+        readers_.clear();
+        records_.clear();
+
+        for (auto &book : CsvStorage::loadBooks(dir + "/books.csv"))
+            books_[book->getId()] = std::move(book);
+
+        for (auto &reader : CsvStorage::loadReaders(dir + "/readers.csv"))
+            readers_[reader->getId()] = std::move(reader);
+
+        records_ = CsvStorage::loadRecords(dir + "/records.csv");
+
+                for (const auto &rec : records_)
+        {
+            Book *book = findBook(rec.bookId);
+            Reader *reader = findReader(rec.readerId);
+            if (!book || !reader)
+                continue;
+
+            book->borrowOut();
+            reader->borrow(rec.bookId);
+
+            if (rec.isReturned())
+            {
+                book->returnBack();
+                reader->returnBook(rec.bookId);
+            }
+        }
     }
 
 }

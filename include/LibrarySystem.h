@@ -77,5 +77,9 @@ namespace library
         // 列出所有图书/读者（多态）
         void listBooks() const;
         void listReaders() const;
+
+        // ---- 持久化（委托给 CsvStorage）----
+        void save(const std::string &dir = "data") const;
+        void load(const std::string &dir = "data");
     };
 }
