@@ -11,6 +11,16 @@ namespace library
         return 5;
     }
 
+    int StudentReader::maxBorrowDays() const
+    {
+        return 30;
+    }
+
+    double StudentReader::finePerDay() const
+    {
+        return 0.50;
+    }
+
     std::string StudentReader::getType() const
     {
         return "StudentReader";

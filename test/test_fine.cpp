@@ -4,6 +4,8 @@
 #include "../include/book/PhysicalBook.h"
 #include "../include/book/EBook.h"
 #include "../include/book/Magazine.h"
+#include "../include/reader/Student.h"
+#include "../include/reader/Teacher.h"
 
 #include <cmath>
 #include <iostream>
@@ -75,6 +77,19 @@ static void test_book_borrow_days()
     endCase();
 }
 
+static void test_reader_terms()
+{
+    beginCase("reader: 借期与日罚多态");
+    StudentReader s("S1", "Alice");
+    TeacherReader t("T1", "Bob");
+
+    CHECK(s.maxBorrowDays() == 30);
+    CHECK(t.maxBorrowDays() == 60);
+    CHECK(approx(s.finePerDay(), 0.50));
+    CHECK(approx(t.finePerDay(), 0.20));
+    endCase();
+}
+
 int main()
 {
     std::cout << "===== Fine / Date Tests =====\n";
@@ -82,6 +97,7 @@ int main()
     test_days_between();
     test_add_days();
     test_book_borrow_days();
+    test_reader_terms();
 
     std::cout << "=============================\n";
     std::cout << "PASSED: " << g_passed << "   FAILED: " << g_failed << "\n";

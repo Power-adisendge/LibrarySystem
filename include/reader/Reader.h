@@ -27,6 +27,10 @@ namespace library
 
         // 借阅上限由子类决定（实现多态）
         [[nodiscard]] virtual int maxBorrowLimit() const = 0;
+        // 最长借书期限（天）
+        [[nodiscard]] virtual int maxBorrowDays() const = 0;
+        // 每天超期罚款（元）
+        [[nodiscard]] virtual double finePerDay() const = 0;
 
         BorrowResult borrow(const std::string &bookId);
         BorrowResult returnBook(const std::string &bookId);

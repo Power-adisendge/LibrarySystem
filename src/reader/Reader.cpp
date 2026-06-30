@@ -42,6 +42,8 @@ namespace library
                   << getName()
                   << " 已借 " << borrowedCount()
                   << "/" << maxBorrowLimit() << " 本"
+                  << " · 借期" << maxBorrowDays() << "天"
+                  << " · 逾期" << finePerDay() << "元/天"
                   << std::endl;
     }
 
