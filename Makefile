@@ -5,8 +5,8 @@ CXXFLAGS := -std=c++17 -Iinclude -Wall -Wextra -g
 SRCS     := $(shell find src -name '*.cpp')
 OBJS     := $(patsubst src/%.cpp,build/%.o,$(SRCS))
 
-TEST_SRC := test/test_book.cpp
-TARGET   := test_book
+TEST_SRC := test/test_reader.cpp
+TARGET   := test_reader
 
 $(TARGET): $(OBJS) $(TEST_SRC)
 	$(CXX) $(CXXFLAGS) $(OBJS) $(TEST_SRC) -o $@
