@@ -31,6 +31,8 @@ namespace library
 
         [[nodiscard]] std::string availabilityInfo() const override;
 
+        [[nodiscard]] int maxBorrowDays() const override;
+
         std::string getType() const override;
 
         const std::string &getFormat() const { return format_; }

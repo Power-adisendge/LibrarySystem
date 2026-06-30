@@ -1,9 +1,13 @@
 // test/test_fine.cpp
 // 逾期费用相关测试，沿用 test_library 的手写断言风格
 #include "../include/DateUtil.h"
+#include "../include/book/PhysicalBook.h"
+#include "../include/book/EBook.h"
+#include "../include/book/Magazine.h"
 
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <string>
 
 using namespace library;
@@ -58,12 +62,26 @@ static void test_add_days()
     endCase();
 }
 
+static void test_book_borrow_days()
+{
+    beginCase("book: maxBorrowDays 多态");
+    PhysicalBook p("P1", "C++ Primer", "Lippman", "AW", 2);
+    EBook e("E1", "SICP", "Abelson", "MIT", "PDF", 12.5);
+    Magazine m("M1", "Nature", "NPG", 42, "2024-01-01");
+
+    CHECK(p.maxBorrowDays() == 30);
+    CHECK(e.maxBorrowDays() < 0);   // 电子书不计逾期
+    CHECK(m.maxBorrowDays() < 0);   // 杂志不外借
+    endCase();
+}
+
 int main()
 {
     std::cout << "===== Fine / Date Tests =====\n";
 
     test_days_between();
     test_add_days();
+    test_book_borrow_days();
 
     std::cout << "=============================\n";
     std::cout << "PASSED: " << g_passed << "   FAILED: " << g_failed << "\n";

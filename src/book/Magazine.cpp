@@ -27,6 +27,11 @@ namespace library
         return "仅限馆内阅览";
     }
 
+    int Magazine::maxBorrowDays() const
+    {
+        return -1;
+    }
+
     std::string Magazine::getType() const
     {
         return "Magazine";

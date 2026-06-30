@@ -29,7 +29,12 @@ namespace library
     std::string PhysicalBook::availabilityInfo() const
     {
         return std::to_string(availableCopies_) + "/" +
-               std::to_string(totalCopies_) + " 可借";
+               std::to_string(totalCopies_) + " 可借 · 借期30天";
+    }
+
+    int PhysicalBook::maxBorrowDays() const
+    {
+        return 30;
     }
 
     std::string PhysicalBook::getType() const

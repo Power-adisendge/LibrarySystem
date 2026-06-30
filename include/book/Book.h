@@ -38,6 +38,9 @@ namespace library
         // 看看当前可以借阅的数量（string形式）
         [[nodiscard]] virtual std::string availabilityInfo() const = 0;
 
+        // 借出最大期限（天），<0 表示不计逾期/不外借
+        [[nodiscard]] virtual int maxBorrowDays() const = 0;
+
         void display() const override;
     };
 }

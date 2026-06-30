@@ -26,7 +26,12 @@ namespace library
 
     std::string EBook::availabilityInfo() const
     {
-        return "电子资源（无限借阅）";
+        return "电子资源（无限借阅，不计逾期）";
+    }
+
+    int EBook::maxBorrowDays() const
+    {
+        return -1;
     }
 
     std::string EBook::getType() const

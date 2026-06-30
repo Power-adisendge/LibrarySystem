@@ -29,6 +29,8 @@ namespace library
 
         [[nodiscard]] std::string availabilityInfo() const override;
 
+        [[nodiscard]] int maxBorrowDays() const override;
+
         std::string getType() const override;
 
         int getIssueNumber() const { return issueNumber_; }
